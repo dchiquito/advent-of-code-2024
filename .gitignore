@@ -23,3 +23,8 @@ go.work.sum
 
 # env file
 .env
+
+# Don't commit auth tokens silly
+.session
+# The data directory, since we don't want to commit the puzzle inputs either
+data
