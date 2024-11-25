@@ -44,7 +44,7 @@ func findPayload(html []byte) string {
 ></span>]</span> this victory or <a href="/2019">[Return to Your Advent Calendar]</a>.</p></article>
 */
 func sendAnswer(day int, level int, answer string) {
-	_url := fmt.Sprintf("https://adventofcode.com/2019/day/%d/answer", day)
+	_url := fmt.Sprintf("https://adventofcode.com/2024/day/%d/answer", day)
 	form := url.Values{}
 	form.Set("level", strconv.Itoa(level))
 	form.Set("answer", answer)

@@ -1,5 +1,7 @@
 package main
 
+// This is the day 1 solution for 2019, which I solved to test the API early before starting 2024.
+
 import (
 	"bufio"
 	"fmt"

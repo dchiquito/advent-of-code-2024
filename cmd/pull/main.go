@@ -10,7 +10,7 @@ import (
 )
 
 func getPuzzleInput(day int) []byte {
-	url := fmt.Sprintf("https://adventofcode.com/2019/day/%d/input", day)
+	url := fmt.Sprintf("https://adventofcode.com/2024/day/%d/input", day)
 	req, err := http.NewRequest("GET", url, nil)
 	util.Check(err, "Failed to set up request")
 
