@@ -28,3 +28,5 @@ go.work.sum
 .session
 # The data directory, since we don't want to commit the puzzle inputs either
 data
+# no sense uploading binaries, let the people build them themselves
+bin
