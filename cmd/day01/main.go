@@ -29,9 +29,8 @@ func Quicksort(arr []int) {
 	}
 }
 
-func level1() {
+func parse() ([]int, []int) {
 	scanner := bufio.NewScanner(os.Stdin)
-	total_differences := 0
 	lefts := make([]int, 0, 1000)
 	rights := make([]int, 0, 1000)
 	for scanner.Scan() {
@@ -45,22 +44,42 @@ func level1() {
 		util.Check(err, "malformed right input")
 		rights = append(rights, right)
 	}
-	sort.Slice(lefts, func(i, j int) bool { return lefts[i] > lefts[j] })
-	sort.Slice(rights, func(i, j int) bool { return rights[i] > rights[j] })
+	sort.Slice(lefts, func(i, j int) bool { return lefts[i] < lefts[j] })
+	sort.Slice(rights, func(i, j int) bool { return rights[i] < rights[j] })
+	return lefts, rights
+}
 
+func level1() {
+	lefts, rights := parse()
+
+	totalDifferences := 0
 	for i := range lefts {
 		left := lefts[i]
 		right := rights[i]
 		if left > right {
-			total_differences += left - right
+			totalDifferences += left - right
 		} else {
-			total_differences += right - left
+			totalDifferences += right - left
 		}
 	}
-	fmt.Println(total_differences)
+	fmt.Println(totalDifferences)
 }
 
 func level2() {
+	lefts, rights := parse()
+	rightIndex := 0
+	similarityScore := 0
+	for _, left := range lefts {
+		dupes := 0
+		for rightIndex < len(rights) && rights[rightIndex] <= left {
+			if rights[rightIndex] == left {
+				dupes += 1
+			}
+			rightIndex += 1
+		}
+		similarityScore += left * dupes
+	}
+	fmt.Println(similarityScore)
 }
 
 func main() {
