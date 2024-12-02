@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"sort"
 	"strconv"
@@ -29,8 +30,8 @@ func Quicksort(arr []int) {
 	}
 }
 
-func parse() ([]int, []int) {
-	scanner := bufio.NewScanner(os.Stdin)
+func parse(in io.Reader) ([]int, []int) {
+	scanner := bufio.NewScanner(in)
 	lefts := make([]int, 0, 1000)
 	rights := make([]int, 0, 1000)
 	for scanner.Scan() {
@@ -49,8 +50,8 @@ func parse() ([]int, []int) {
 	return lefts, rights
 }
 
-func level1() {
-	lefts, rights := parse()
+func level1(in io.Reader) string {
+	lefts, rights := parse(in)
 
 	totalDifferences := 0
 	for i := range lefts {
@@ -62,11 +63,11 @@ func level1() {
 			totalDifferences += right - left
 		}
 	}
-	fmt.Println(totalDifferences)
+	return fmt.Sprint(totalDifferences)
 }
 
-func level2() {
-	lefts, rights := parse()
+func level2(in io.Reader) string {
+	lefts, rights := parse(in)
 	rightIndex := 0
 	similarityScore := 0
 	for _, left := range lefts {
@@ -79,13 +80,13 @@ func level2() {
 		}
 		similarityScore += left * dupes
 	}
-	fmt.Println(similarityScore)
+	return fmt.Sprint(similarityScore)
 }
 
 func main() {
 	if util.GetLevelArg() == 1 {
-		level1()
+		fmt.Println(level1(os.Stdin))
 	} else {
-		level2()
+		fmt.Println(level2(os.Stdin))
 	}
 }
