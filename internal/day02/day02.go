@@ -1,10 +1,9 @@
-package main
+package day02
 
 import (
 	"bufio"
 	"fmt"
 	"io"
-	"os"
 	"strconv"
 	"strings"
 
@@ -46,7 +45,7 @@ func isSafe(report []int) bool {
 	return true
 }
 
-func level1(in io.Reader) string {
+func Level1(in io.Reader) string {
 	reports := parse(in)
 	safeReports := 0
 	for _, report := range reports {
@@ -69,7 +68,7 @@ func isSafeDamped(report []int) bool {
 	return false
 }
 
-func level2(in io.Reader) string {
+func Level2(in io.Reader) string {
 	reports := parse(in)
 	safeReports := 0
 	for _, report := range reports {
@@ -78,12 +77,4 @@ func level2(in io.Reader) string {
 		}
 	}
 	return fmt.Sprint(safeReports)
-}
-
-func main() {
-	if util.GetLevelArg() == 1 {
-		fmt.Println(level1(os.Stdin))
-	} else {
-		fmt.Println(level2(os.Stdin))
-	}
 }

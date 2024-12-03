@@ -1,20 +1,17 @@
-package main
+package day03
 
 import (
 	"fmt"
 	"io"
-	"os"
 	"regexp"
 	"strconv"
-
-	"github.com/dchiquito/advent-of-code-2024/internal/util"
 )
 
 func parse(in io.Reader) {}
 
-func level1(in io.Reader) string {
+func Level1(in io.Reader) string {
 	input, _ := io.ReadAll(in)
-	re := regexp.MustCompile(`(mul\((\d{1,3}),(\d{1,3})\))|`)
+	re := regexp.MustCompile(`mul\((\d{1,3}),(\d{1,3})\)`)
 	muls := re.FindAllStringSubmatch(string(input), -1)
 	total := 0
 	for _, mul := range muls {
@@ -25,7 +22,7 @@ func level1(in io.Reader) string {
 	return fmt.Sprint(total)
 }
 
-func level2(in io.Reader) string {
+func Level2(in io.Reader) string {
 	input, _ := io.ReadAll(in)
 	re := regexp.MustCompile(`mul\((\d{1,3}),(\d{1,3})\)|do\(\)|don't\(\)`)
 	ops := re.FindAllStringSubmatch(string(input), -1)
@@ -43,12 +40,4 @@ func level2(in io.Reader) string {
 		}
 	}
 	return fmt.Sprint(total)
-}
-
-func main() {
-	if util.GetLevelArg() == 1 {
-		fmt.Println(level1(os.Stdin))
-	} else {
-		fmt.Println(level2(os.Stdin))
-	}
 }

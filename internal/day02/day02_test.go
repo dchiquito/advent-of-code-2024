@@ -1,4 +1,4 @@
-package main
+package day02
 
 import (
 	"bytes"
@@ -6,8 +6,13 @@ import (
 	"testing"
 )
 
+func readData() []byte {
+	file, _ := os.ReadFile("data/02.txt")
+	return file
+}
+
 func BenchmarkParse(b *testing.B) {
-	file, _ := os.ReadFile("data/01.txt")
+	file := readData()
 	b.ResetTimer()
 	for range b.N {
 		reader := bytes.NewReader(file)
@@ -15,18 +20,18 @@ func BenchmarkParse(b *testing.B) {
 	}
 }
 func BenchmarkLevel1(b *testing.B) {
-	file, _ := os.ReadFile("data/01.txt")
+	file := readData()
 	b.ResetTimer()
 	for range b.N {
 		reader := bytes.NewReader(file)
-		level1(reader)
+		Level1(reader)
 	}
 }
 func BenchmarkLevel2(b *testing.B) {
-	file, _ := os.ReadFile("data/01.txt")
+	file := readData()
 	b.ResetTimer()
 	for range b.N {
 		reader := bytes.NewReader(file)
-		level2(reader)
+		Level2(reader)
 	}
 }

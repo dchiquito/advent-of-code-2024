@@ -1,10 +1,9 @@
-package main
+package day01
 
 import (
 	"bufio"
 	"fmt"
 	"io"
-	"os"
 	"sort"
 	"strconv"
 
@@ -50,7 +49,7 @@ func parse(in io.Reader) ([]int, []int) {
 	return lefts, rights
 }
 
-func level1(in io.Reader) string {
+func Level1(in io.Reader) string {
 	lefts, rights := parse(in)
 
 	totalDifferences := 0
@@ -66,7 +65,7 @@ func level1(in io.Reader) string {
 	return fmt.Sprint(totalDifferences)
 }
 
-func level2(in io.Reader) string {
+func Level2(in io.Reader) string {
 	lefts, rights := parse(in)
 	rightIndex := 0
 	similarityScore := 0
@@ -81,12 +80,4 @@ func level2(in io.Reader) string {
 		similarityScore += left * dupes
 	}
 	return fmt.Sprint(similarityScore)
-}
-
-func main() {
-	if util.GetLevelArg() == 1 {
-		fmt.Println(level1(os.Stdin))
-	} else {
-		fmt.Println(level2(os.Stdin))
-	}
 }
