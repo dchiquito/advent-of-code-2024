@@ -30,8 +30,23 @@ import (
 	"github.com/dchiquito/advent-of-code-2024/internal/day23"
 	"github.com/dchiquito/advent-of-code-2024/internal/day24"
 	"github.com/dchiquito/advent-of-code-2024/internal/day25"
+	"github.com/dchiquito/advent-of-code-2024/internal/pull"
 	"github.com/dchiquito/advent-of-code-2024/internal/util"
 )
+
+func getInput(day int) *os.File {
+	path := fmt.Sprintf("data/%02d.txt", day)
+	in, _ := os.Open(path)
+	if in == nil {
+		// Assume the input has not yet been pulled, try to pull it
+		pull.Pull(day)
+		in, _ = os.Open(path)
+		if in == nil {
+			util.Panic("Failed to fetch input for day", 6)
+		}
+	}
+	return in
+}
 
 func RunPart1(day int, in io.Reader) string {
 	switch day {
@@ -148,9 +163,16 @@ func RunPart2(day int, in io.Reader) string {
 }
 
 func main() {
-	if util.GetLevelArg() == 1 {
-		fmt.Println(RunPart1(util.GetDayArg(), os.Stdin))
+	day := util.GetDayArg()
+	level := util.GetLevelArg()
+	in := getInput(day)
+	defer in.Close()
+	var solution string
+	if level == 1 {
+		solution = RunPart1(day, in)
 	} else {
-		fmt.Println(RunPart2(util.GetDayArg(), os.Stdin))
+		solution = RunPart2(day, in)
 	}
+	fmt.Println(solution)
+	fmt.Println("Submit this?")
 }
