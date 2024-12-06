@@ -54,4 +54,4 @@ func SendAnswer(day int, level int, answer string) {
 	result := FindPayload(html)
 
 	fmt.Println(result)
-
+}

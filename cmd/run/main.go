@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -31,6 +32,7 @@ import (
 	"github.com/dchiquito/advent-of-code-2024/internal/day24"
 	"github.com/dchiquito/advent-of-code-2024/internal/day25"
 	"github.com/dchiquito/advent-of-code-2024/internal/pull"
+	"github.com/dchiquito/advent-of-code-2024/internal/submit"
 	"github.com/dchiquito/advent-of-code-2024/internal/util"
 )
 
@@ -174,5 +176,14 @@ func main() {
 		solution = RunPart2(day, in)
 	}
 	fmt.Println(solution)
-	fmt.Println("Submit this?")
+	// Assume any 0,1, or 2 digit solutions are wrong
+	if len(solution) < 3 {
+		return
+	}
+	fmt.Print("Submit this? (y/n): ")
+	reader := bufio.NewReader(os.Stdin)
+	yesNo, _ := reader.ReadString('\n')
+	if yesNo == "y\n" {
+		submit.SendAnswer(day, level, solution)
+	}
 }
