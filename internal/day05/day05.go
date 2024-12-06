@@ -78,7 +78,6 @@ func isSorted(update []int, graph Graph) bool {
 		}
 	}
 	for _, i := range update {
-		fmt.Println("thinkin on", update, i, references[i])
 		// If another node points to the node in the update, then we are out of order
 		if references[i] != 0 {
 			return false
@@ -103,6 +102,49 @@ func Level1(in io.Reader) string {
 	return fmt.Sprint(total)
 }
 
+func middleSorted(update []int, graph Graph) int {
+	// This tracks how many other nodes have references to the index node
+	var references [100]int
+	// for every possible node i,
+	for _, i := range update {
+		// check every other node j and count
+		for _, j := range update {
+			// which js point to i
+			for _, ref := range graph[j] {
+				if ref == i {
+					references[i] += 1
+				}
+			}
+		}
+	}
+	nextVal := 0
+	// Stop sorting after we get to the middle value
+	for x := 0; x < 1+len(update)/2; x += 1 {
+		// Find node in the update with no references to it
+		for _, i := range update {
+			if references[i] == 0 {
+				nextVal = i
+				// Delete the node by decrementing everything it references
+				for _, j := range graph[i] {
+					references[j] -= 1
+				}
+				// And set the node to garbage so it can't be found again
+				references[i] = -1
+				break
+			}
+		}
+	}
+	return nextVal
+}
+
 func Level2(in io.Reader) string {
-	return ""
+	orderings, updates := parse(in)
+	graph := buildGraph(orderings)
+	total := 0
+	for _, update := range updates {
+		if !isSorted(update, graph) {
+			total += middleSorted(update, graph)
+		}
+	}
+	return fmt.Sprint(total)
 }
