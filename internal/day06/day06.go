@@ -42,8 +42,7 @@ func parse(in io.Reader) ([]Cell, int, int) {
 	return grid, startX, startY
 }
 
-func Level1(in io.Reader) string {
-	grid, x, y := parse(in)
+func Visited(grid []Cell, x int, y int) [Size * Size]bool {
 	var visited [Size * Size]bool
 	visited[y*Size+x] = true
 	dx := 0
@@ -65,6 +64,12 @@ func Level1(in io.Reader) string {
 			visited[y*Size+x] = true
 		}
 	}
+	return visited
+}
+
+func Level1(in io.Reader) string {
+	grid, x, y := parse(in)
+	visited := Visited(grid, x, y)
 	count := 0
 	for _, v := range visited {
 		if v {
@@ -128,12 +133,6 @@ func hasCycle(grid []Cell, x int, y int) bool {
 }
 
 func display(grid []Cell, visited []Dir) {
-	// for y := 0; y < Size; y += 1 {
-	// 	for x := 0; x < Size; x += 1 {
-	// 		fmt.Print(visited[y*Size+x], " ")
-	// 	}
-	// 	fmt.Println()
-	// }
 	for y := 0; y < Size; y += 1 {
 		for x := 0; x < Size; x += 1 {
 			i := y*Size + x
@@ -160,9 +159,10 @@ func display(grid []Cell, visited []Dir) {
 
 func Level2(in io.Reader) string {
 	grid, x, y := parse(in)
+	visited := Visited(grid, x, y)
 	count := 0
 	for i := 0; i < Size*Size; i += 1 {
-		if grid[i] != Empty || i == y*Size+x {
+		if !visited[i] || i == y*Size+x {
 			continue
 		}
 		grid[i] = Block
