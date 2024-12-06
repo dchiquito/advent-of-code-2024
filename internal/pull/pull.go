@@ -26,7 +26,7 @@ func GetPuzzleInput(day int) []byte {
 }
 
 func WritePuzzleInput(day int, input []byte) {
-	filename := fmt.Sprintf("data/%02d.txt", day)
+	filename := util.DefaultInputFilePath(day)
 	err := os.WriteFile(filename, input, 0666)
 	util.Check(err, "Failed to write input to file")
 }

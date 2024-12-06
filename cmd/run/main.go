@@ -37,14 +37,17 @@ import (
 )
 
 func getInput(day int) *os.File {
-	path := fmt.Sprintf("data/%02d.txt", day)
+	path := util.GetInputFilePath(day)
 	in, _ := os.Open(path)
 	if in == nil {
+		if util.HasInputArg() {
+			util.Panic("Failed to open", path)
+		}
 		// Assume the input has not yet been pulled, try to pull it
 		pull.Pull(day)
 		in, _ = os.Open(path)
 		if in == nil {
-			util.Panic("Failed to fetch input for day", 6)
+			util.Panic("Failed to fetch input for day", day)
 		}
 	}
 	return in
@@ -177,7 +180,7 @@ func main() {
 	}
 	fmt.Println(solution)
 	// Assume any 0,1, or 2 digit solutions are wrong
-	if len(solution) < 3 {
+	if len(solution) < 3 || util.HasInputArg() {
 		return
 	}
 	fmt.Print("Submit this? (y/n): ")

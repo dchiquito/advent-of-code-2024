@@ -1,6 +1,7 @@
 package util
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 	"net/http/cookiejar"
@@ -47,11 +48,23 @@ func SendRequest(req *http.Request) *http.Response {
 	return resp
 }
 
+var argInput string
+
+func prepFlags() {
+	if flag.Parsed() {
+		return
+	}
+
+	flag.StringVar(&argInput, "input", "", "foo bar")
+	flag.Parse()
+}
+
 func GetDayArg() int {
-	if len(os.Args) < 2 {
+	prepFlags()
+	if len(flag.Args()) < 1 {
 		Panic("Please specify the day")
 	}
-	day, err := strconv.Atoi(os.Args[1])
+	day, err := strconv.Atoi(flag.Arg(0))
 	Check(err, "Please specify a number for the day")
 	if day < 1 || day > 25 {
 		Check("naughty", "Please specify a day between 1 and 25")
@@ -60,13 +73,30 @@ func GetDayArg() int {
 }
 
 func GetLevelArg() int {
-	if len(os.Args) < 3 {
+	prepFlags()
+	if len(flag.Args()) < 2 {
 		Panic("Please specify the level")
 	}
-	level, err := strconv.Atoi(os.Args[2])
+	level, err := strconv.Atoi(flag.Arg(1))
 	Check(err, "Please specify a number for the level")
 	if level != 1 && level != 2 {
 		Panic("Please specify either level 1 or 2")
 	}
 	return level
+}
+
+func DefaultInputFilePath(day int) string {
+	return fmt.Sprintf("data/%02d.txt", day)
+}
+
+func GetInputFilePath(day int) string {
+	prepFlags()
+	if HasInputArg() {
+		return argInput
+	} else {
+		return DefaultInputFilePath(day)
+	}
+}
+func HasInputArg() bool {
+	return argInput != ""
 }
