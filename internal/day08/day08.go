@@ -82,5 +82,39 @@ func Level1(in io.Reader) string {
 }
 
 func Level2(in io.Reader) string {
-	return ""
+	grid := parse(in)
+	var antinodes [SIZE][SIZE]bool
+	for y1, line := range grid {
+		for x1 := range line {
+			c := line[x1]
+			if c == '.' {
+				continue
+			}
+			for y2 := 0; y2 < SIZE; y2 += 1 {
+				for x2 := 0; x2 < SIZE; x2 += 1 {
+					if grid[y2][x2] == c && !(y1 == y2 && x1 == x2) {
+						dy := y2 - y1
+						dx := x2 - x1
+						ay := y2
+						ax := x2
+						// TODO can this be optimized by starting a x2,y2=x1,y2 so every pair is only visited once, then explicitly scanning in a direction?
+						for ay >= 0 && ay < SIZE && ax >= 0 && ax < SIZE {
+							antinodes[ay][ax] = true
+							ay += dy
+							ax += dx
+						}
+					}
+				}
+			}
+		}
+	}
+	total := 0
+	for _, line := range antinodes {
+		for _, an := range line {
+			if an {
+				total += 1
+			}
+		}
+	}
+	return fmt.Sprint(total)
 }
