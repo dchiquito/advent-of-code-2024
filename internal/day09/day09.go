@@ -100,6 +100,107 @@ func Level1(in io.Reader) string {
 	return fmt.Sprint(checksum)
 }
 
+type Section struct {
+	FileID       *int
+	FileLength   byte
+	SuffixLength byte
+	Suffix       *Section
+}
+
+func (s Section) String() string {
+	str := ""
+	var i byte
+	var fileid string
+	if s.FileID != nil {
+		fileid = fmt.Sprint(*s.FileID)
+	} else {
+		fileid = "."
+	}
+	for i = 0; i < s.FileLength; i += 1 {
+		str += fileid
+	}
+	if s.Suffix != nil {
+		str += s.Suffix.String()
+	} else {
+		for i = 0; i < s.SuffixLength; i += 1 {
+			str += "."
+		}
+	}
+	return str
+}
+func Print(sections []Section) {
+	for _, section := range sections {
+		fmt.Print(section.String())
+	}
+	fmt.Println()
+}
+
+func (s Section) Checksum(index int) (int, int) {
+	checksum := 0
+	if s.FileID != nil {
+		for i := 0; i < int(s.FileLength); i += 1 {
+			checksum += index * (*s.FileID)
+			index += 1
+		}
+	} else {
+		index += int(s.FileLength)
+	}
+	if s.Suffix != nil {
+		i, c := s.Suffix.Checksum(index)
+		index = i
+		checksum += c
+	} else {
+		index += int(s.SuffixLength)
+	}
+	return index, checksum
+}
+
 func Level2(in io.Reader) string {
-	return ""
+	bytes := parse(in)
+	sections := make([]Section, (len(bytes)+1)/2)
+	for i := 0; i < len(bytes)/2; i += 1 {
+		fileLength := bytes[2*i]
+		suffixLength := bytes[(2*i)+1]
+		sections[i] = Section{&i, fileLength, suffixLength, nil}
+	}
+	// The last section must be handled specially
+	lastIndex := len(sections) - 1
+	sections[lastIndex] = Section{&lastIndex, bytes[lastIndex*2], 0, nil}
+	// r is the index of the file we are trying to move
+	for r := len(sections) - 1; r > 0; r -= 1 {
+		sectionToMove := &sections[r]
+		for l := 0; l < r; l += 1 {
+			found := false
+			sectionWithGap := &sections[l]
+			for sectionWithGap.SuffixLength >= sectionToMove.FileLength {
+				if sectionWithGap.Suffix == nil {
+					// Copy sectionToMove into the suffix
+					sectionWithGap.Suffix = &Section{
+						sectionToMove.FileID,
+						sectionToMove.FileLength,
+						sectionWithGap.SuffixLength - sectionToMove.FileLength,
+						nil,
+					}
+					// Delete the original by niling the file ID
+					sectionToMove.FileID = nil
+					found = true
+					break
+				} else {
+					sectionWithGap = sectionWithGap.Suffix
+				}
+			}
+			if found {
+				// We found somewhere to cram it, stop looking
+				break
+			}
+		}
+	}
+	index := 0
+	checksum := 0
+	for _, section := range sections {
+		i, c := section.Checksum(index)
+		index = i
+		checksum += c
+	}
+	return fmt.Sprint(checksum)
 }
