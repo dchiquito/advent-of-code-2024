@@ -68,6 +68,38 @@ func Level1(in io.Reader) string {
 	return fmt.Sprint(total)
 }
 
+func ascendRating(grid [][]byte, x int, y int) int {
+	height := grid[y][x]
+	if height == 9 {
+		return 1
+	}
+	total := 0
+	if x > 0 && grid[y][x-1] == height+1 {
+		total += ascendRating(grid, x-1, y)
+	}
+	if x < len(grid[y])-1 && grid[y][x+1] == height+1 {
+		total += ascendRating(grid, x+1, y)
+
+	}
+	if y > 0 && grid[y-1][x] == height+1 {
+		total += ascendRating(grid, x, y-1)
+	}
+	if y < len(grid)-1 && grid[y+1][x] == height+1 {
+		total += ascendRating(grid, x, y+1)
+	}
+	return total
+}
+
 func Level2(in io.Reader) string {
-	return ""
+	grid := parse(in)
+	total := 0
+	for y, line := range grid {
+		for x, h := range line {
+			if h == 0 {
+				// TODO caching
+				total += ascendRating(grid, x, y)
+			}
+		}
+	}
+	return fmt.Sprint(total)
 }
