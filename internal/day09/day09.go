@@ -166,12 +166,13 @@ func Level2(in io.Reader) string {
 	// The last section must be handled specially
 	lastIndex := len(sections) - 1
 	sections[lastIndex] = Section{&lastIndex, bytes[lastIndex*2], 0, nil}
+	var memos [10]int
 	// r is the index of the file we are trying to move
 	for r := len(sections) - 1; r > 0; r -= 1 {
 		sectionToMove := &sections[r]
-		for l := 0; l < r; l += 1 {
+		for ; memos[sectionToMove.FileLength] < r; memos[sectionToMove.FileLength] += 1 {
 			found := false
-			sectionWithGap := &sections[l]
+			sectionWithGap := &sections[memos[sectionToMove.FileLength]]
 			for sectionWithGap.SuffixLength >= sectionToMove.FileLength {
 				if sectionWithGap.Suffix == nil {
 					// Copy sectionToMove into the suffix
