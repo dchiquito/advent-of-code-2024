@@ -28,9 +28,11 @@ func parse(in io.Reader) [][]int {
 }
 
 func isDeltaSafe(a int, b int, ascending bool) bool {
-	delta := b - a
-	if !ascending {
-		delta = -delta
+	var delta int
+	if ascending {
+		delta = b - a
+	} else {
+		delta = a - b
 	}
 	return delta >= 1 && delta <= 3
 }
@@ -57,12 +59,63 @@ func Level1(in io.Reader) string {
 }
 
 func isSafeDamped(report []int) bool {
-	trimmedReport := make([]int, len(report)-1)
-	for i := range report {
-		copy(trimmedReport, report[:i])
-		copy(trimmedReport[i:], report[i+1:])
-		if isSafe(trimmedReport) {
+	// trimmedReport := make([]int, len(report)-1)
+	// for i := range report {
+	// 	copy(trimmedReport, report[:i])
+	// 	copy(trimmedReport[i:], report[i+1:])
+	// 	if isSafe(trimmedReport) {
+	// 		return true
+	// 	}
+	// }
+	// return false
+	// Try deleting the first element
+	if isSafe(report[1:]) {
+		return true
+	}
+	// Try deleting the last element
+	if isSafe(report[:len(report)-1]) {
+		return true
+	}
+	// Try deleting the second element
+	ascending := report[0] < report[2]
+	if isDeltaSafe(report[0], report[2], ascending) {
+		safe := true
+		for i := 3; i < len(report); i += 1 {
+			if !isDeltaSafe(report[i-1], report[i], ascending) {
+				safe = false
+				break
+			}
+		}
+		if safe {
 			return true
+		}
+	}
+	// Try deleting the remaining elements
+	ascending = report[0] < report[1]
+	if isDeltaSafe(report[0], report[1], ascending) {
+		for x := 2; x < len(report)-1; x += 1 {
+			if !isDeltaSafe(report[x-1], report[x+1], ascending) {
+				continue
+			}
+			safe := true
+			for i := 2; i < x; i += 1 {
+				if !isDeltaSafe(report[i-1], report[i], ascending) {
+					safe = false
+					break
+				}
+			}
+			if !safe {
+				continue
+			}
+			for i := x + 2; i < len(report); i += 1 {
+				if !isDeltaSafe(report[i-1], report[i], ascending) {
+					safe = false
+					break
+				}
+			}
+			if safe {
+				return true
+			}
 		}
 	}
 	return false
@@ -70,6 +123,7 @@ func isSafeDamped(report []int) bool {
 
 func Level2(in io.Reader) string {
 	reports := parse(in)
+	util.Stopwatch("parse")
 	safeReports := 0
 	for _, report := range reports {
 		if isSafeDamped(report) {
