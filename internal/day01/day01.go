@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"sort"
-	"strconv"
 
 	"github.com/dchiquito/advent-of-code-2024/internal/util"
 )
@@ -29,23 +28,33 @@ func Quicksort(arr []int) {
 	}
 }
 
+func toInt(s []byte) int {
+	// return ((int(s[0]) - 48) * 10000) + ((int(s[1]) - 48) * 1000) + ((int(s[2]) - 48) * 100) + ((int(s[3]) - 48) * 10) + int(s[4]) - 48
+	total := 0
+	for i := len(s) - 1; i >= 0; i -= 1 {
+		total *= 10
+		total += int(s[i]) - 48
+	}
+	return total
+}
+
 func parse(in io.Reader) ([]int, []int) {
 	scanner := bufio.NewScanner(in)
 	lefts := make([]int, 0, 1000)
 	rights := make([]int, 0, 1000)
 	for scanner.Scan() {
-		line := scanner.Text()
-		left, err := strconv.Atoi(line[:5])
+		line := scanner.Bytes()
+		left := toInt(line[:5])
 		// left, err := strconv.Atoi(line[:1])
-		util.Check(err, "malformed left input")
 		lefts = append(lefts, left)
-		right, err := strconv.Atoi(line[8:])
+		right := toInt(line[8:])
 		// right, err := strconv.Atoi(line[4:])
-		util.Check(err, "malformed right input")
 		rights = append(rights, right)
 	}
+	util.Stopwatch("presort")
 	sort.Slice(lefts, func(i, j int) bool { return lefts[i] < lefts[j] })
 	sort.Slice(rights, func(i, j int) bool { return rights[i] < rights[j] })
+	util.Stopwatch("sort")
 	return lefts, rights
 }
 
