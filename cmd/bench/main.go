@@ -102,7 +102,7 @@ func printTimingInfo(timers []Timer) {
 
 	stdErrs := make([]float64, len(times))
 	for i := range stdErrs {
-		stdErrs[i] = calculateStdDev(means[i], times[i])
+		stdErrs[i] = calculateStdErr(means[i], times[i])
 	}
 	elapsedStdErr := calculateStdErr(elapsedMean, elapseds)
 
