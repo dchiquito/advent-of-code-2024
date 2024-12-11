@@ -100,3 +100,14 @@ func GetInputFilePath(day int) string {
 func HasInputArg() bool {
 	return argInput != ""
 }
+
+var stopwatch func(string)
+
+func StartStopwatch(f func(string)) {
+	stopwatch = f
+}
+func Stopwatch(label string) {
+	if stopwatch != nil {
+		stopwatch(label)
+	}
+}
