@@ -21,6 +21,15 @@ func Panic(a ...any) {
 	os.Exit(1)
 }
 
+func ToInt(s string) int {
+	total := 0
+	for i := len(s) - 1; i >= 0; i -= 1 {
+		total *= 10
+		total += int(s[i]) - 48
+	}
+	return total
+}
+
 func GetSessionCookie() *http.Cookie {
 	content, err := os.ReadFile(".session")
 	Check(err, "Please log in to https://adventofcode.com, grab the session cookie, and save it in a .session file")

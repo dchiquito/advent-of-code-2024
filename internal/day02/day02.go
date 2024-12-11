@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"strconv"
 	"strings"
 
 	"github.com/dchiquito/advent-of-code-2024/internal/util"
@@ -18,8 +17,7 @@ func parse(in io.Reader) [][]int {
 		lineSplit := strings.Fields(line)
 		report := make([]int, len(lineSplit))
 		for i, levelString := range lineSplit {
-			level, err := strconv.Atoi(levelString)
-			util.Check(err, "Invalid level string")
+			level := util.ToInt(levelString)
 			report[i] = level
 		}
 		reports = append(reports, report)
