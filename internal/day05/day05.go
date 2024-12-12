@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+
+	"github.com/dchiquito/advent-of-code-2024/internal/util"
 )
 
 type Ordering struct {
@@ -139,7 +141,9 @@ func middleSorted(update []int, graph Graph) int {
 
 func Level2(in io.Reader) string {
 	orderings, updates := parse(in)
+	util.Stopwatch("parse")
 	graph := buildGraph(orderings)
+	util.Stopwatch("graph")
 	total := 0
 	for _, update := range updates {
 		if !isSorted(update, graph) {
