@@ -12,7 +12,9 @@ func parse(in io.Reader) [][]byte {
 	grid := make([][]byte, 0, 1000)
 	for scanner.Scan() {
 		line := scanner.Bytes()
-		grid = append(grid, line)
+		arr := make([]byte, len(line))
+		copy(arr, line)
+		grid = append(grid, arr)
 	}
 	return grid
 }
@@ -132,25 +134,16 @@ func Level1(in io.Reader) string {
 			}
 			area, perimeter := floodFill(grid, &visited, x, y, c)
 			total += area * perimeter
-			if area != calcArea(grid, x, y, c) {
-				fmt.Println(area, perimeter, calcPerimeter(grid, x, y, c))
-			}
-			if perimeter != calcPerimeter(grid, x, y, c) {
-				fmt.Println(area, perimeter, calcPerimeter(grid, x, y, c))
-			}
-			fmt.Println(area, perimeter)
-			fmt.Println(calcArea(grid, x, y, c), calcPerimeter(grid, x, y, c))
+			// if area != calcArea(grid, x, y, c) {
+			// 	fmt.Println(area, perimeter, calcPerimeter(grid, x, y, c))
+			// }
+			// if perimeter != calcPerimeter(grid, x, y, c) {
+			// 	fmt.Println(area, perimeter, calcPerimeter(grid, x, y, c))
+			// }
 			regions += 1
 			totalArea += area
 		}
 	}
-	// Check for missed plots
-	for i, v := range visited {
-		if !v {
-			fmt.Println("MISSED ", i, v)
-		}
-	}
-	fmt.Println(totalArea, "=", size, "x", size, "=", size*size)
 	return fmt.Sprint(total)
 }
 
