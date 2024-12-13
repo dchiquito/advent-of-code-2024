@@ -65,20 +65,37 @@ func Level1(in io.Reader) string {
 		// very cool, but ax/ay is not necessarily an integer
 		// j == (px*ay/ay - py*ax/ay) / (bx*ay/ay - by*ax/ay)
 		// j == (px*ay - py*ax) / (bx*ay - by*ax)
+		iNum := m.px*m.by - m.py*m.bx
+		iDenom := m.ax*m.by - m.ay*m.bx
 		jNum := (m.px * m.ay) - (m.py * m.ax)
 		jDenom := (m.bx * m.ay) - (m.by * m.ax)
-		if jNum%jDenom == 0 {
+		if iNum%iDenom == 0 && jNum%jDenom == 0 {
 			iNum := m.px*m.by - m.py*m.bx
 			iDenom := m.ax*m.by - m.ay*m.bx
 			aPresses := iNum / iDenom
 			bPresses := jNum / jDenom
 			total += 3*aPresses + bPresses
 		}
-
 	}
 	return fmt.Sprint(total)
 }
 
 func Level2(in io.Reader) string {
-	return ""
+	machines := parse(in)
+	total := 0
+	for _, m := range machines {
+		//      9223372036854775807
+		m.px += 10000000000000
+		m.py += 10000000000000
+		iNum := m.px*m.by - m.py*m.bx
+		iDenom := m.ax*m.by - m.ay*m.bx
+		jNum := (m.px * m.ay) - (m.py * m.ax)
+		jDenom := (m.bx * m.ay) - (m.by * m.ax)
+		if iNum%iDenom == 0 && jNum%jDenom == 0 {
+			aPresses := iNum / iDenom
+			bPresses := jNum / jDenom
+			total += 3*aPresses + bPresses
+		}
+	}
+	return fmt.Sprint(total)
 }
