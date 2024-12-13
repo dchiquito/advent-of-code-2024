@@ -247,6 +247,8 @@ func Level2(in io.Reader) string {
 			if visited[y*size+x] {
 				continue
 			}
+			// TODO replace edges with a visited style array
+			// use ints and use bits to represent direction
 			edges := map[int]bool{}
 			area := floodFill2(grid, &visited, &edges, x, y, c, 2)
 			numEdges := countEdges(size, edges)
