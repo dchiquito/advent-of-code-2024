@@ -125,8 +125,6 @@ func Level1(in io.Reader) string {
 	size := len(grid)
 	visited := make([]bool, size*size)
 	total := 0
-	regions := 0
-	totalArea := 0
 	for y, line := range grid {
 		for x, c := range line {
 			if visited[y*size+x] {
@@ -140,13 +138,120 @@ func Level1(in io.Reader) string {
 			// if perimeter != calcPerimeter(grid, x, y, c) {
 			// 	fmt.Println(area, perimeter, calcPerimeter(grid, x, y, c))
 			// }
-			regions += 1
-			totalArea += area
 		}
 	}
 	return fmt.Sprint(total)
 }
 
+func floodFill2(grid [][]byte, visited *[]bool, edges *map[int]bool, x int, y int, c byte, d int) int {
+	size := len(grid)
+	// check if we have left the bounds of the garden or region and need to increment the perimeter
+	if x < 0 || x >= size || y < 0 || y >= size || grid[y][x] != c {
+		if d == 0 {
+			(*edges)[toEdge(size, x, y+1, d)] = true
+		}
+		if d == 1 {
+			(*edges)[toEdge(size, x-1, y, d)] = true
+		}
+		if d == 2 {
+			(*edges)[toEdge(size, x, y-1, d)] = true
+		}
+		if d == 3 {
+			(*edges)[toEdge(size, x+1, y, d)] = true
+		}
+		return 0
+	}
+	if (*visited)[(len(grid)*y)+x] {
+		// We've already checked this square
+		return 0
+	}
+	(*visited)[len(grid)*y+x] = true
+	//  0
+	// 3 1
+	//  2
+	aLeft := floodFill2(grid, visited, edges, x-1, y, c, 3)
+	aRight := floodFill2(grid, visited, edges, x+1, y, c, 1)
+	aUp := floodFill2(grid, visited, edges, x, y-1, c, 0)
+	aDown := floodFill2(grid, visited, edges, x, y+1, c, 2)
+	area := 1 + aLeft + aRight + aUp + aDown
+	return area
+}
+
+func toEdge(size int, x int, y int, d int) int {
+	return (y * size * 4) + (x * 4) + d
+}
+func fromEdge(size int, e int) (int, int, int) {
+	d := e % 4
+	coord := e / 4
+	x := coord % size
+	y := coord / size
+	return x, y, d
+}
+func countEdges(size int, edges map[int]bool) int {
+	edgeNum := 0
+	for len(edges) > 0 {
+		edgeNum += 1
+		var edge int
+		for edge = range edges {
+			break
+		}
+		delete(edges, edge)
+		x, y, d := fromEdge(size, edge)
+		//  0
+		// 3 1
+		//  2
+		if d == 0 || d == 2 {
+			// Facing up/down, the edge will extend left/right
+			for dx := 1; x+dx < size; dx += 1 {
+				adjEdge := toEdge(size, x+dx, y, d)
+				if !edges[adjEdge] {
+					break
+				}
+				delete(edges, adjEdge)
+			}
+			for dx := -1; x+dx >= 0; dx -= 1 {
+				adjEdge := toEdge(size, x+dx, y, d)
+				if !edges[adjEdge] {
+					break
+				}
+				delete(edges, adjEdge)
+			}
+		} else {
+			// Facing left/right, the edge will extend up/down
+			for dy := 1; y+dy < size; dy += 1 {
+				adjEdge := toEdge(size, x, y+dy, d)
+				if !edges[adjEdge] {
+					break
+				}
+				delete(edges, adjEdge)
+			}
+			for dy := -1; y+dy >= 0; dy -= 1 {
+				adjEdge := toEdge(size, x, y+dy, d)
+				if !edges[adjEdge] {
+					break
+				}
+				delete(edges, adjEdge)
+			}
+		}
+	}
+	return edgeNum
+}
+
 func Level2(in io.Reader) string {
-	return ""
+	grid := parse(in)
+	size := len(grid)
+	visited := make([]bool, size*size)
+	total := 0
+	for y, line := range grid {
+		for x, c := range line {
+			if visited[y*size+x] {
+				continue
+			}
+			edges := map[int]bool{}
+			area := floodFill2(grid, &visited, &edges, x, y, c, 2)
+			numEdges := countEdges(size, edges)
+			total += area * numEdges
+		}
+	}
+	return fmt.Sprint(total)
 }
