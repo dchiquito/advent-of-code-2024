@@ -62,13 +62,64 @@ func Level1(in io.Reader) string {
 	return fmt.Sprint(safetyFactor)
 }
 
-func floodFill(bots []int, visited *[]bool, x int, y int) int {
+func floodFill(botGrid []int, visited *[]bool, x int, y int) int {
 	i := y*w + x
-	if x < 0 || x >= w || y < 0 || y >= h || (*visited)[i] || bots[i] > 0 {
+	if x < 0 || x >= w || y < 0 || y >= h || (*visited)[i] || botGrid[i] > 0 {
 		return 0
 	}
 	(*visited)[i] = true
-	return 1 + floodFill(bots, visited, x-1, y) + floodFill(bots, visited, x+1, y) + floodFill(bots, visited, x, y-1) + floodFill(bots, visited, x, y+1)
+	return 1 + floodFill(botGrid, visited, x-1, y) + floodFill(botGrid, visited, x+1, y) + floodFill(botGrid, visited, x, y-1) + floodFill(botGrid, visited, x, y+1)
+}
+
+func hasCavity(botGrid []int) bool {
+	// Start at 1,1 to avoid getting an abnormally small area by being boxed in a corner
+	j := w + 2
+	for botGrid[j] > 0 {
+		j += 1
+	}
+	x := j % w
+	y := j / w
+	visited := make([]bool, w*h)
+	outerArea := floodFill(botGrid[:], &visited, x, y)
+	return outerArea > 100 && outerArea < 9900
+}
+
+// This iterates over every cell in the grid, O(10000)
+func hasStreak(botGrid []int) bool {
+	streak := 0
+	for i := 0; i < w*h; i += 1 {
+		if i%w == 0 || botGrid[i] == 0 {
+			streak = 0
+		} else {
+			streak += 1
+		}
+		if streak > 10 {
+			return true
+		}
+	}
+	return false
+}
+
+// This starts at each bots coordinate to look for a streak, O(500*10) worst case
+func hasStreak2(bots []Bot, botGrid []int) bool {
+	requiredStreak := 10
+	for _, bot := range bots {
+		streak := 0
+		if bot.px > w-requiredStreak {
+			continue
+		}
+		for i := bot.px + (w * bot.py); i%w != 0; i += 1 {
+			if botGrid[i] == 0 {
+				break
+			} else {
+				streak += 1
+			}
+			if streak > requiredStreak {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func Level2(in io.Reader) string {
@@ -77,7 +128,6 @@ func Level2(in io.Reader) string {
 	for _, bot := range bots {
 		botGrid[w*bot.py+bot.px] += 1
 	}
-	visited := make([]bool, w*h)
 	for i := 1; true; i += 1 {
 		for b, bot := range bots {
 			botGrid[w*bot.py+bot.px] -= 1
@@ -85,16 +135,7 @@ func Level2(in io.Reader) string {
 			bots[b].py = (bot.py + bot.vy + h) % h
 			botGrid[w*bots[b].py+bots[b].px] += 1
 		}
-		// Start at 1,1 to avoid getting an abnormally small area by being boxed in a corner
-		j := w + 2
-		for botGrid[j] > 0 {
-			j += 1
-		}
-		x := j % w
-		y := j / w
-		visited = make([]bool, w*h)
-		outerArea := floodFill(botGrid[:], &visited, x, y)
-		if outerArea > 100 && outerArea < 9900 {
+		if hasStreak2(bots, botGrid[:]) && hasCavity(botGrid[:]) {
 			// for y := 0; y < h; y += 1 {
 			// 	for x := 0; x < w; x += 1 {
 			// 		fmt.Print(botGrid[w*x+y])
