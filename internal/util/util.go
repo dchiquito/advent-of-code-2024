@@ -30,6 +30,23 @@ func ToInt(s string) int {
 	return total
 }
 
+func ChompInt(line []byte, i int) (int, int) {
+	for line[i] < 48 || line[i] > 57 {
+		i += 1
+	}
+	val := int(line[i]) - 48
+	neg := i-1 >= 0 && line[i-1] == 45
+	i += 1
+	for i < len(line) && line[i] >= 48 && line[i] <= 57 {
+		val = (val * 10) + int(line[i]) - 48
+		i += 1
+	}
+	if neg {
+		val = -val
+	}
+	return i, val
+}
+
 func GetSessionCookie() *http.Cookie {
 	content, err := os.ReadFile(".session")
 	Check(err, "Please log in to https://adventofcode.com, grab the session cookie, and save it in a .session file")
