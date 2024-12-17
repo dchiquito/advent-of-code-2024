@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/dchiquito/advent-of-code-2024/internal/util"
 )
@@ -15,7 +14,7 @@ type CPU struct {
 	c       int
 	pc      int
 	program []int
-	out     []string
+	out     []int
 }
 
 func parse(in io.Reader) CPU {
@@ -37,7 +36,7 @@ func parse(in io.Reader) CPU {
 		i, p = util.ChompInt(programLine, i)
 		program = append(program, p)
 	}
-	return CPU{a, b, c, 0, program, make([]string, 0, 100)}
+	return CPU{a, b, c, 0, program, make([]int, 0, 100)}
 }
 
 func (cpu *CPU) Step() bool {
@@ -65,7 +64,6 @@ func (cpu *CPU) Step() bool {
 	case 6:
 		op = cpu.c
 	}
-	fmt.Println("exec", instr, literalOp, op)
 	switch instr {
 	case 0: // adv (division)
 		num := cpu.a
@@ -82,7 +80,7 @@ func (cpu *CPU) Step() bool {
 	case 4: // bxc (bitwise xor)
 		cpu.b = cpu.b ^ cpu.c
 	case 5: //out
-		cpu.out = append(cpu.out, fmt.Sprint(op%8))
+		cpu.out = append(cpu.out, op%8)
 	case 6: // bdv
 		num := cpu.a
 		denom := 1 << op
@@ -99,9 +97,51 @@ func Level1(in io.Reader) string {
 	cpu := parse(in)
 	for cpu.Step() {
 	}
-	return strings.Join(cpu.out, ",")
+	answer := fmt.Sprint(cpu.out[0])
+	for i := 1; i < len(cpu.out); i += 1 {
+		answer = answer + "," + fmt.Sprint(cpu.out[i])
+	}
+	return answer
+}
+
+func solve(cpuInit CPU, a int, place int) int {
+	if place < 0 {
+		return a
+	}
+	for j := 0; j < 8; j += 1 {
+		cpu := cpuInit
+		trialA := a + (j << (place * 3))
+		cpu.a = trialA
+		for cpu.Step() {
+		}
+		if len(cpu.out) > place && cpu.out[place] == cpu.program[place] {
+			solution := solve(cpuInit, trialA, place-1)
+			if solution > -1 {
+				return solution
+			}
+		}
+	}
+	return -1
 }
 
 func Level2(in io.Reader) string {
-	return ""
+	//2,4 b = a%8
+	//1,1 b ^= 1
+	//7,5 c = a/1<<b
+	//1,5 b = b^0b101
+	//4,0 b = b^c
+	//0,3 a = a/8
+	//5,5 print b%8
+	//3,0 loop if a!=0
+	// Observations:
+	// The program is a simple loop.
+	// It computes a value to print based on A, then divides A by 8 and repeats until A is 0.
+	// Therefore, the last digit is only dependent on the 3 most significant bits of A, the second to last digit on the next 3 bits, and so on.
+	// We can simply work our way backwards through the input to solve for A.
+
+	cpuInit := parse(in)
+	a := 0
+	place := len(cpuInit.program) - 1
+	solution := solve(cpuInit, a, place)
+	return fmt.Sprint(solution)
 }
