@@ -30,6 +30,7 @@ func ToInt(s string) int {
 	return total
 }
 
+// Takes a line of input and a starting index, searches for the next integer, and returns the next index and that integer.
 func ChompInt(line []byte, i int) (int, int) {
 	for line[i] < 48 || line[i] > 57 {
 		i += 1
