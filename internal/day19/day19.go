@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 )
 
@@ -19,13 +20,50 @@ func parse(in io.Reader) ([]string, []string) {
 	return towels, patterns
 }
 
-func recur(towels []string, pattern string) bool {
+var colors = [...]byte{'b', 'g', 'r', 'u', 'w'}
+
+func charIndex(c byte) int {
+	var i int
+	switch c {
+	case 'b':
+		i = 0
+	case 'g':
+		i = 1
+	case 'r':
+		i = 2
+	case 'u':
+		i = 3
+	case 'w':
+		i = 4
+	}
+	return i
+}
+func buildIndex(towels []string) []int {
+	index := make([]int, 5)
+	t := 0
+	for i1, c1 := range colors {
+		index[i1] = t
+		for t < len(towels) && towels[t][0] == c1 {
+			t += 1
+		}
+	}
+	return index
+}
+
+func recur(towels []string, pattern string, index []int) bool {
 	if len(pattern) == 0 {
 		return true
 	}
-	for _, towel := range towels {
+	ind := charIndex(pattern[0])
+	start := index[ind]
+	end := len(towels) - 1
+	if ind+1 < len(index) {
+		end = index[ind+1]
+	}
+
+	for _, towel := range towels[start:end] {
 		if len(pattern) >= len(towel) && pattern[:len(towel)] == towel {
-			if recur(towels, pattern[len(towel):]) {
+			if recur(towels, pattern[len(towel):], index) {
 				return true
 			}
 		}
@@ -35,9 +73,11 @@ func recur(towels []string, pattern string) bool {
 
 func Level1(in io.Reader) string {
 	towels, patterns := parse(in)
+	sort.Strings(towels)
+	index := buildIndex(towels)
 	total := 0
 	for _, pattern := range patterns {
-		if recur(towels, pattern) {
+		if recur(towels, pattern, index) {
 			total += 1
 		}
 	}
