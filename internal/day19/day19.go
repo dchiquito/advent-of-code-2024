@@ -44,6 +44,28 @@ func Level1(in io.Reader) string {
 	return fmt.Sprint(total)
 }
 
+func recur2(towels []string, pattern string, cache *map[int]int) int {
+	if len(pattern) == 0 {
+		return 1
+	}
+	if (*cache)[len(pattern)] > 0 {
+		return (*cache)[len(pattern)]
+	}
+	total := 0
+	for _, towel := range towels {
+		if len(pattern) >= len(towel) && pattern[:len(towel)] == towel {
+			total += recur2(towels, pattern[len(towel):], cache)
+		}
+	}
+	(*cache)[len(pattern)] = total
+	return total
+}
+
 func Level2(in io.Reader) string {
-	return ""
+	towels, patterns := parse(in)
+	total := 0
+	for _, pattern := range patterns {
+		total += recur2(towels, pattern, &map[int]int{})
+	}
+	return fmt.Sprint(total)
 }
