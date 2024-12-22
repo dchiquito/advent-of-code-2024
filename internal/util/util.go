@@ -23,7 +23,7 @@ func Panic(a ...any) {
 
 func ToInt(s string) int {
 	total := 0
-	for i := len(s) - 1; i >= 0; i -= 1 {
+	for i := 0; i < len(s); i += 1 {
 		total *= 10
 		total += int(s[i]) - 48
 	}

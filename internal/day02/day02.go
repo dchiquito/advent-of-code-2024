@@ -17,6 +17,7 @@ func parse(in io.Reader) [][]int {
 		lineSplit := strings.Fields(line)
 		report := make([]int, len(lineSplit))
 		for i, levelString := range lineSplit {
+			//TODO I think this be backwards
 			level := util.ToInt(levelString)
 			report[i] = level
 		}
