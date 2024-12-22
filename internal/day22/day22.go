@@ -60,31 +60,45 @@ func Level2(in io.Reader) string {
 			lastDelta = delta
 		}
 	}
+
+	maxDelta := ((10 + 9) * 20 * 20 * 20) + ((10) * 20 * 20) + ((10) * 20) + (10)
+	fmt.Println(maxDelta)
+	checked := make([]bool, maxDelta+1)
+
 	bestTotal := 0
-	// 192 seconds :(
-	for a := 0; a < 10; a += 1 {
-		for b := 0; b < 10; b += 1 {
-			fmt.Println(a, b, bestTotal)
-			for c := 0; c < 10; c += 1 {
-				for d := 0; d < 10; d += 1 {
-					for e := 0; e < 10; e += 1 {
-						expectedDelta := ((10 + b - a) * 20 * 20 * 20) + ((10 + c - b) * 20 * 20) + ((10 + d - c) * 20) + (10 + e - d)
-						total := 0
-						for i, iDeltas := range deltas {
-							for j, realDelta := range iDeltas {
-								if realDelta == expectedDelta {
-									total += prices[i][j]
-									break
-								}
-							}
-						}
-						if total > bestTotal {
-							bestTotal = total
-						}
+	for xx, iDeltas := range deltas {
+		fmt.Println(xx)
+		for _, expectedDelta := range iDeltas {
+			// if expectedDelta > maxDelta {
+			// 	d := expectedDelta
+			// 	fmt.Println(d, d/(20*20*20), (d/(20*20))%20, (d/20)%20, d%20)
+			// }
+			if checked[expectedDelta] {
+				continue
+			}
+			checked[expectedDelta] = true
+			total := 0
+			for i, iDeltas := range deltas {
+				for j, realDelta := range iDeltas {
+					if realDelta == expectedDelta {
+						total += prices[i][j]
+						break
 					}
 				}
 			}
+			if total > bestTotal {
+				bestTotal = total
+			}
 		}
 	}
+
+	xxx := 0
+	for _, d := range checked {
+		if d {
+			xxx += 1
+		}
+	}
+	fmt.Println("Checked", xxx)
+	// 80 seconds, more than twice as fast
 	return fmt.Sprint(bestTotal)
 }
