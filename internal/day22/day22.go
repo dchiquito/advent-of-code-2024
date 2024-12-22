@@ -40,65 +40,34 @@ func Level1(in io.Reader) string {
 
 func Level2(in io.Reader) string {
 	lines := parse(in)
-	prices := make([][]int, len(lines))
-	deltas := make([][]int, len(lines))
+	maxDelta := ((10 + 9) * 20 * 20 * 20) + ((10) * 20 * 20) + ((10) * 20) + (10)
+	sums := make([]int, maxDelta+1)
+	lastVisit := make([]int, maxDelta+1)
 	for i, line := range lines {
-		prices[i] = make([]int, 2000)
-		deltas[i] = make([]int, 2000)
-		prices[i][0] = line % 10
-		lastPrice := prices[i][0]
+		lastPrice := line % 10
 		lastDelta := 0
 		secret := nextSecret(line)
 		for j := 1; j < 2000; j += 1 {
 			secret = nextSecret(secret)
 			price := secret % 10
-			prices[i][j] = price
 			delta := 10 + price - lastPrice
 			delta = ((lastDelta * 20) % (20 * 20 * 20 * 20)) + delta
-			deltas[i][j] = delta
+			if lastVisit[delta] != i {
+				lastVisit[delta] = i
+				sums[delta] += price
+			}
 			lastPrice = price
 			lastDelta = delta
 		}
 	}
 
-	maxDelta := ((10 + 9) * 20 * 20 * 20) + ((10) * 20 * 20) + ((10) * 20) + (10)
-	fmt.Println(maxDelta)
-	checked := make([]bool, maxDelta+1)
-
 	bestTotal := 0
-	for xx, iDeltas := range deltas {
-		fmt.Println(xx)
-		for _, expectedDelta := range iDeltas {
-			// if expectedDelta > maxDelta {
-			// 	d := expectedDelta
-			// 	fmt.Println(d, d/(20*20*20), (d/(20*20))%20, (d/20)%20, d%20)
-			// }
-			if checked[expectedDelta] {
-				continue
-			}
-			checked[expectedDelta] = true
-			total := 0
-			for i, iDeltas := range deltas {
-				for j, realDelta := range iDeltas {
-					if realDelta == expectedDelta {
-						total += prices[i][j]
-						break
-					}
-				}
-			}
-			if total > bestTotal {
-				bestTotal = total
-			}
+	for _, total := range sums {
+		if total > bestTotal {
+			bestTotal = total
 		}
 	}
 
-	xxx := 0
-	for _, d := range checked {
-		if d {
-			xxx += 1
-		}
-	}
-	fmt.Println("Checked", xxx)
 	// 80 seconds, more than twice as fast
 	return fmt.Sprint(bestTotal)
 }
