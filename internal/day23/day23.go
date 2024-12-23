@@ -57,29 +57,14 @@ func Level1(in io.Reader) string {
 						// Avoid double counting
 						continue
 					}
-					// check if graph[i][j] is in graph[i][k]
-					for _, nkk := range graph[nk] {
-						if nkk == nj {
-							// it dooo
-							total += 1
-							break
-						}
+					if isAdjacent(graph, nj, nk) {
+						total += 1
+						break
 					}
 				}
 			}
 		}
 	}
-	// for i := 26 * 19; i < 26*20; i += 1 {
-	// 	for j := 0; j < len(graph); j += 1 {
-	// 		if isAdjacent(graph, i, j) {
-	// 			for k := 0; k < len(graph); k += 1 {
-	// 				if isAdjacent(graph, i, k) && isAdjacent(graph, j, k) {
-	// 					total += 1
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
 	return fmt.Sprint(total)
 }
 
