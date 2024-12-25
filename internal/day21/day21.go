@@ -31,11 +31,10 @@ func hash(start int, end int, lastPress int) int {
 	return (start * 12 * 12) + (end * 12) + lastPress
 }
 
-const BAD = 999999
+const BAD = 999999999999999
 
 // Count how many presses it would take to use a dirpad to move from the start index to the end index, given the last button pushed on this pad
 func numberOfMoves(memos *[][]int, pad Pad, start int, end int, lastPress int, depth int) int {
-	// fmt.Println("calling", start, end, lastPress, depth)
 	if depth == 0 {
 		return 1
 	}
@@ -56,7 +55,6 @@ func numberOfMoves(memos *[][]int, pad Pad, start int, end int, lastPress int, d
 	ey := end / 3
 	dx := ex - sx
 	dy := ey - sy
-	// fmt.Println("dx", dx, "dy", dy)
 
 	xMoves := BAD
 	if dx > 0 {
@@ -78,7 +76,6 @@ func numberOfMoves(memos *[][]int, pad Pad, start int, end int, lastPress int, d
 		yMoves = numberOfMoves(memos, dirpad, lastPress, dirpad.buttons['^'], dirpad.buttons['A'], depth-1) +
 			numberOfMoves(memos, pad, start-3, end, dirpad.buttons['^'], depth)
 	}
-	// fmt.Println("x", xMoves, "y", yMoves)
 	moves := xMoves
 	if xMoves == BAD || yMoves < xMoves {
 		moves = yMoves
@@ -96,16 +93,11 @@ func Level1(in io.Reader) string {
 	}
 	total := 0
 	for _, line := range lines {
-		// fmt.Println("\nBEGIN", string([]byte{'A', line[0]}))
 		numMoves := numberOfMoves(&memos, numpad, numpad.buttons['A'], numpad.buttons[line[0]], dirpad.buttons['A'], depth)
-		// fmt.Println("TOTAL", numMoves)
 		for i := 0; i < len(line)-1; i += 1 {
-			// fmt.Println("\nBEGIN", string([]byte{line[i], line[i+1]}))
 			newMoves := numberOfMoves(&memos, numpad, numpad.buttons[line[i]], numpad.buttons[line[i+1]], dirpad.buttons['A'], depth)
-			// fmt.Println("TOTAL", newMoves)
 			numMoves += newMoves
 		}
-		// fmt.Println("\t\t\t\t", numMoves)
 		total += numMoves * util.ToInt(string(line[:3]))
 	}
 	return fmt.Sprint(total)
@@ -120,5 +112,20 @@ func Level1(in io.Reader) string {
 }
 
 func Level2(in io.Reader) string {
-	return ""
+	lines := parse(in)
+	depth := 26
+	memos := make([][]int, depth+1)
+	for i := range memos {
+		memos[i] = make([]int, 12*12*12)
+	}
+	total := 0
+	for _, line := range lines {
+		numMoves := numberOfMoves(&memos, numpad, numpad.buttons['A'], numpad.buttons[line[0]], dirpad.buttons['A'], depth)
+		for i := 0; i < len(line)-1; i += 1 {
+			newMoves := numberOfMoves(&memos, numpad, numpad.buttons[line[i]], numpad.buttons[line[i+1]], dirpad.buttons['A'], depth)
+			numMoves += newMoves
+		}
+		total += numMoves * util.ToInt(string(line[:3]))
+	}
+	return fmt.Sprint(total)
 }
