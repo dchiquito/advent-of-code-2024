@@ -19,109 +19,94 @@ func parse(in io.Reader) [][]byte {
 	return lines
 }
 
-type Pad = map[byte]int
+type Pad struct {
+	buttons map[byte]int
+	banned  int
+}
 
-var numpad = Pad{'7': 0, '8': 1, '9': 2, '4': 3, '5': 4, '6': 5, '1': 6, '2': 7, '3': 8, '0': 10, 'A': 11}
-var dirpad = Pad{'^': 1, 'A': 2, '<': 3, 'v': 4, '>': 5}
+var numpad = Pad{map[byte]int{'7': 0, '8': 1, '9': 2, '4': 3, '5': 4, '6': 5, '1': 6, '2': 7, '3': 8, '0': 10, 'A': 11}, 9}
+var dirpad = Pad{map[byte]int{'^': 1, 'A': 2, '<': 3, 'v': 4, '>': 5}, 0}
 
-func moves(pad Pad, start byte, end byte) []byte {
-	moves := []byte{}
-	si := pad[start]
-	sx := si % 3
-	sy := si / 3
+func hash(start int, end int, lastPress int) int {
+	return (start * 12 * 12) + (end * 12) + lastPress
+}
 
-	ei := pad[end]
-	ex := ei % 3
-	ey := ei / 3
+const BAD = 999999
 
+// Count how many presses it would take to use a dirpad to move from the start index to the end index, given the last button pushed on this pad
+func numberOfMoves(memos *[][]int, pad Pad, start int, end int, lastPress int, depth int) int {
+	// fmt.Println("calling", start, end, lastPress, depth)
+	if depth == 0 {
+		return 1
+	}
+	if start == pad.banned {
+		return BAD
+	}
+	h := hash(start, end, lastPress)
+	if (*memos)[depth][h] != 0 {
+		return (*memos)[depth][h]
+	}
+	if start == end {
+		// We are already positioned over the correct button, just press A
+		return numberOfMoves(memos, dirpad, lastPress, dirpad.buttons['A'], dirpad.buttons['A'], depth-1)
+	}
+	sx := start % 3
+	sy := start / 3
+	ex := end % 3
+	ey := end / 3
 	dx := ex - sx
 	dy := ey - sy
+	// fmt.Println("dx", dx, "dy", dy)
 
-	// The order matters here
-	// We are dodging a hole in either the top left or the top right:
-	// X O O
-	// O O O
-	// X O O
-	// So we first move right, then up/down, then left
+	xMoves := BAD
 	if dx > 0 {
-		for i := 0; i < dx; i += 1 {
-			moves = append(moves, '>')
-		}
+		// >
+		xMoves = numberOfMoves(memos, dirpad, lastPress, dirpad.buttons['>'], dirpad.buttons['A'], depth-1) +
+			numberOfMoves(memos, pad, start+1, end, dirpad.buttons['>'], depth)
+	} else if dx < 0 {
+		// <
+		xMoves = numberOfMoves(memos, dirpad, lastPress, dirpad.buttons['<'], dirpad.buttons['A'], depth-1) +
+			numberOfMoves(memos, pad, start-1, end, dirpad.buttons['<'], depth)
 	}
-	if dy < 0 {
-		for i := dy; i < 0; i += 1 {
-			moves = append(moves, '^')
-		}
-	}
+	yMoves := BAD
 	if dy > 0 {
-		for i := 0; i < dy; i += 1 {
-			moves = append(moves, 'v')
-		}
+		// v
+		yMoves = numberOfMoves(memos, dirpad, lastPress, dirpad.buttons['v'], dirpad.buttons['A'], depth-1) +
+			numberOfMoves(memos, pad, start+3, end, dirpad.buttons['v'], depth)
+	} else if dy < 0 {
+		// ^
+		yMoves = numberOfMoves(memos, dirpad, lastPress, dirpad.buttons['^'], dirpad.buttons['A'], depth-1) +
+			numberOfMoves(memos, pad, start-3, end, dirpad.buttons['^'], depth)
 	}
-	if dx < 0 {
-		for i := dx; i < 0; i += 1 {
-			moves = append(moves, '<')
-		}
+	// fmt.Println("x", xMoves, "y", yMoves)
+	moves := xMoves
+	if xMoves == BAD || yMoves < xMoves {
+		moves = yMoves
 	}
-	moves = append(moves, 'A')
+	(*memos)[depth][h] = moves
 	return moves
-}
-
-func allMoves(pad Pad, arr []byte) []byte {
-	var prev byte = 'A'
-	ms := []byte{}
-	for _, next := range arr {
-		ms = append(ms, moves(pad, prev, next)...)
-		prev = next
-	}
-	return ms
-}
-func moveNumpad(memo *[]int, si int, ei int, depth int) int {
-	// si := numpad[start]
-	// ei := numpad[end]
-	if (*memo)[si*12+ei] != 0 {
-		return (*memo)[si*12+ei]
-	}
-
-	sx := si % 3
-	sy := si / 3
-
-	ex := ei % 3
-	ey := ei / 3
-
-	dx := ex - sx
-	dy := ey - sy
-
-	if dx == 0 {
-		if dy > 0 {
-			numMoves := moveNumpad(memo, si-3, ei, depth) + moveDirpad('^', depth-1)
-			(*memo)[si*12+ei] = numMoves
-			return numMoves
-		}
-	}
-	return 0
-}
-
-func moveDirpad(c byte, depth int) int {
-	if depth == 1 {
-
-	}
-	return 0
 }
 
 func Level1(in io.Reader) string {
 	lines := parse(in)
+	depth := 3
+	memos := make([][]int, depth+1)
+	for i := range memos {
+		memos[i] = make([]int, 12*12*12)
+	}
 	total := 0
 	for _, line := range lines {
-		fmt.Println(string(line))
-		m1 := allMoves(numpad, line)
-		fmt.Println(string(m1))
-		m2 := allMoves(dirpad, m1)
-		fmt.Println(string(m2))
-		m3 := allMoves(dirpad, m2)
-		fmt.Println(string(m3))
-		fmt.Println(len(m3), "*", util.ToInt(string(line[:len(line)-1])))
-		total += len(m3) * util.ToInt(string(line[:len(line)-1]))
+		// fmt.Println("\nBEGIN", string([]byte{'A', line[0]}))
+		numMoves := numberOfMoves(&memos, numpad, numpad.buttons['A'], numpad.buttons[line[0]], dirpad.buttons['A'], depth)
+		// fmt.Println("TOTAL", numMoves)
+		for i := 0; i < len(line)-1; i += 1 {
+			// fmt.Println("\nBEGIN", string([]byte{line[i], line[i+1]}))
+			newMoves := numberOfMoves(&memos, numpad, numpad.buttons[line[i]], numpad.buttons[line[i+1]], dirpad.buttons['A'], depth)
+			// fmt.Println("TOTAL", newMoves)
+			numMoves += newMoves
+		}
+		// fmt.Println("\t\t\t\t", numMoves)
+		total += numMoves * util.ToInt(string(line[:3]))
 	}
 	return fmt.Sprint(total)
 	// <v<A>>^AvA^A <vA<AA>>^AAvA<^A>AAvA^     A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A
@@ -132,13 +117,6 @@ func Level1(in io.Reader) string {
 	//    <   A > A    <   AA  v <   AA >>  ^  A  v  AA ^ A  v <   AAA >  ^ A
 	//        ^   A        ^^        <<        A     >>   A        vvv      A
 	//            3                            7          9                 A
-	// The plan:
-	// moveNumpad: calculates the best path for a move on the numpad
-	//   attempts moving closer in both X and Y, picks the shorter length
-	//   memoized with start, end
-	// moveDirpad: calculates the best path for a move on the dirpad, given a depth
-	//   attempts moving closer in both X and Y, picks the shorter length
-	//   memoized with start, end, depth
 }
 
 func Level2(in io.Reader) string {
